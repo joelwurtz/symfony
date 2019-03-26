@@ -60,7 +60,9 @@ class ObjectNormalizer extends AbstractObjectNormalizer
         $attributes = [];
 
         // methods
-        $reflClass = new \ReflectionClass($object);
+        $class = $this->objectClassResolver ? ($this->objectClassResolver)($object) : \get_class($object);
+        $reflClass = new \ReflectionClass($class);
+
         foreach ($reflClass->getMethods(\ReflectionMethod::IS_PUBLIC) as $reflMethod) {
             if (
                 0 !== $reflMethod->getNumberOfRequiredParameters() ||

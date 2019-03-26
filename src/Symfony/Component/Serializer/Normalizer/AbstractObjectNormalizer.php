@@ -49,7 +49,11 @@ abstract class AbstractObjectNormalizer extends AbstractNormalizer
      * @var callable|null
      */
     private $maxDepthHandler;
-    private $objectClassResolver;
+
+    /**
+     * @var callable|null
+     */
+    protected $objectClassResolver;
 
     /**
      * @var ClassDiscriminatorResolverInterface|null
