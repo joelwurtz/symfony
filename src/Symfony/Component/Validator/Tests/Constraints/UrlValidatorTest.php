@@ -78,6 +78,10 @@ class UrlValidatorTest extends ConstraintValidatorTestCase
             ['http://www.test-example.com/'],
             ['http://www.symfony.com/'],
             ['http://symfony.fake/blog/'],
+            ['http://symfony.fake/space in url/'],
+            ['http://symfony.fake/?key=space in value'],
+            ['http://symfony.fake/?space in key=value'],
+            ['http://symfony.fake/#space in fragment'],
             ['http://symfony.com/?'],
             ['http://symfony.com/search?type=&q=url+validator'],
             ['http://symfony.com/#'],
@@ -168,7 +172,6 @@ class UrlValidatorTest extends ConstraintValidatorTestCase
             ['http://username:passwordsymfony.com'],
             ['http://usern@me:password@symfony.com'],
             ['http://example.com/exploit.html?<script>alert(1);</script>'],
-            ['http://example.com/exploit.html?hel lo'],
             ['http://example.com/exploit.html?not_a%hex'],
             ['http://'],
         ];
