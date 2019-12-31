@@ -11,24 +11,15 @@
 
 namespace Symfony\Component\AutoMapper\Tests\Fixtures;
 
-use Symfony\Component\Serializer\Annotation\Groups;
-
-class Foo
+class Node
 {
     /**
-     * @var int
-     *
-     * @Groups({"group1", "group2", "group3"})
+     * @var Node
      */
-    private $id = 0;
+    public $parent;
 
-    public function getId(): int
-    {
-        return $this->id;
-    }
-
-    public function setId(int $id): void
-    {
-        $this->id = $id;
-    }
+    /**
+     * @var Node[]
+     */
+    public $childs = [];
 }

@@ -13,21 +13,21 @@ namespace Symfony\Component\AutoMapper\Tests\Fixtures;
 
 use Symfony\Component\Serializer\Annotation\Groups;
 
-class Foo
+class Bar
 {
     /**
-     * @var int
+     * @var int|null
      *
-     * @Groups({"group1", "group2", "group3"})
+     * @Groups({"group2", "group3"})
      */
-    private $id = 0;
+    private $id;
 
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function setId(int $id): void
+    public function setId(?int $id): void
     {
         $this->id = $id;
     }
