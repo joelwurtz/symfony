@@ -12,6 +12,7 @@
 namespace Symfony\Component\AutoMapper;
 
 use Symfony\Component\AutoMapper\Exception\CircularReferenceException;
+use Symfony\Component\AutoMapper\Exception\NoConstructorArgumentFoundException;
 
 /**
  * Context for mapping.
@@ -62,7 +63,7 @@ class Context extends \ArrayObject
      */
     public function shouldHandleCircularReference(string $reference, ?int $circularReferenceLimit = null): bool
     {
-        if (!isset($this->referenceRegistry[$reference])) {
+        if (!\array_key_exists($reference, $this->referenceRegistry)) {
             return false;
         }
 
@@ -91,6 +92,7 @@ class Context extends \ArrayObject
         }
 
         if (null !== $callback) {
+            // Cannot directly return here, as we need to return by reference, and callback may not be declared as reference return
             $value = $callback($object, $this);
 
             return $value;
@@ -209,7 +211,7 @@ class Context extends \ArrayObject
      */
     public function setConstructorArgument(string $class, string $key, $value): void
     {
-        if ($this->constructorArguments[$class] ?? false) {
+        if (!\array_key_exists($class, $this->constructorArguments)) {
             $this->constructorArguments[$class] = [];
         }
 
@@ -229,6 +231,10 @@ class Context extends \ArrayObject
      */
     public function getConstructorArgument(string $class, string $key)
     {
+        if (!\array_key_exists($key, $this->constructorArguments[$class] ?? [])) {
+            throw new NoConstructorArgumentFoundException();
+        }
+
         return $this->constructorArguments[$class][$key];
     }
 
