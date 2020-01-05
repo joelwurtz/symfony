@@ -19,6 +19,7 @@ use Symfony\Component\AutoMapper\Extractor\PropertyMapping;
 use Symfony\Component\AutoMapper\Extractor\ReflectionExtractor;
 use Symfony\Component\AutoMapper\MapperMetadata;
 use Symfony\Component\AutoMapper\Tests\AutoMapperBaseTest;
+use Symfony\Component\AutoMapper\Tests\Fixtures;
 use Symfony\Component\AutoMapper\Transformer\ArrayTransformerFactory;
 use Symfony\Component\AutoMapper\Transformer\BuiltinTransformerFactory;
 use Symfony\Component\AutoMapper\Transformer\ChainTransformerFactory;
@@ -31,7 +32,6 @@ use Symfony\Component\PropertyInfo\Extractor\PhpDocExtractor;
 use Symfony\Component\PropertyInfo\PropertyInfoExtractor;
 use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactory;
 use Symfony\Component\Serializer\Mapping\Loader\AnnotationLoader;
-use Symfony\Component\AutoMapper\Tests\Fixtures;
 
 /**
  * @author Baptiste Leduc <baptiste.leduc@gmail.com>
