@@ -4,6 +4,8 @@ CHANGELOG
 7.1
 ---
 
+ * Add `--class` option to the `messenger:failed:retry` command, which allow to filter the messages to retry by their class
+ * Add `--dispatch` option to the `messenger:failed:retry` command, which allow to dispatch the messages to retry instead of handling them
  * Add option `redis_sentinel` as an alias for `sentinel_master`
  * Add `--all` option to the `messenger:consume` command
  * Make `#[AsMessageHandler]` final

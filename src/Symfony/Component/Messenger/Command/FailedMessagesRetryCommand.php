@@ -13,6 +13,7 @@ namespace Symfony\Component\Messenger\Command;
 
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Command\SignalableCommandInterface;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
@@ -25,8 +26,10 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Messenger\Event\WorkerMessageReceivedEvent;
 use Symfony\Component\Messenger\EventListener\StopWorkerOnMessageLimitListener;
 use Symfony\Component\Messenger\MessageBusInterface;
-use Symfony\Component\Messenger\Stamp\DelayStamp;use Symfony\Component\Messenger\Stamp\MessageDecodingFailedStamp;
-use Symfony\Component\Messenger\Stamp\RedeliveryStamp;use Symfony\Component\Messenger\Transport\Receiver\ListableReceiverInterface;
+use Symfony\Component\Messenger\Stamp\DelayStamp;
+use Symfony\Component\Messenger\Stamp\MessageDecodingFailedStamp;
+use Symfony\Component\Messenger\Stamp\RedeliveryStamp;
+use Symfony\Component\Messenger\Transport\Receiver\ListableReceiverInterface;
 use Symfony\Component\Messenger\Transport\Receiver\ReceiverInterface;
 use Symfony\Component\Messenger\Transport\Receiver\SingleMessageReceiver;
 use Symfony\Component\Messenger\Transport\Serialization\PhpSerializer;
@@ -65,6 +68,7 @@ class FailedMessagesRetryCommand extends AbstractFailedMessagesCommand implement
                 new InputOption('force', null, InputOption::VALUE_NONE, 'Force action without confirmation'),
                 new InputOption('transport', null, InputOption::VALUE_OPTIONAL, 'Use a specific failure transport', self::DEFAULT_TRANSPORT_OPTION),
                 new InputOption('dispatch', null, InputOption::VALUE_NONE, 'Dispatch message instead of handling it'),
+                new InputOption('class', null, InputOption::VALUE_OPTIONAL, 'Filter messages by their class name'),
             ])
             ->setHelp(<<<'EOF'
 The <info>%command.name%</info> retries message in the failure transport.
@@ -115,12 +119,31 @@ EOF
         $shouldForce = $input->getOption('force');
         $dispatch = $input->getOption('dispatch');
         $ids = $input->getArgument('id');
-        if (0 === \count($ids)) {
+        $class = $input->getOption('class');
+        if (0 === \count($ids) && null === $class) {
             if (!$input->isInteractive()) {
                 throw new RuntimeException('Message id must be passed when in non-interactive mode.');
             }
 
             $this->runInteractive($failureTransportName, $io, $shouldForce, $dispatch);
+
+            return 0;
+        }
+
+        if (\count($ids) > 0 && null !== $class) {
+            $io->error('You cannot specify both message ids and a class name at the same time.');
+
+            return Command::FAILURE;
+        }
+
+        if (null !== $class) {
+            if (!class_exists($class)) {
+                $output->writeln(sprintf('<error>Class "%s" does not exist</error>', $class));
+
+                return Command::FAILURE;
+            }
+
+            $this->retrySpecificClass($failureTransportName, $class, $io, $shouldForce, $dispatch);
 
             return 0;
         }
@@ -274,6 +297,30 @@ EOF
             if ($this->shouldStop) {
                 break;
             }
+        }
+    }
+
+    private function retrySpecificClass(string $failureTransportName, string $class, SymfonyStyle $io, bool $shouldForce, bool $dispatch): void
+    {
+        $receiver = $this->getReceiver($failureTransportName);
+
+        try {
+            $this->phpSerializer?->acceptPhpIncompleteClass();
+
+            foreach ($receiver->get() as $envelope) {
+                if (is_a($envelope->getMessage(), $class)) {
+                    $singleReceiver = new SingleMessageReceiver($receiver, $envelope);
+                    $this->runWorker($failureTransportName, $singleReceiver, $io, $shouldForce, $dispatch);
+                } else {
+                    $receiver->reject($envelope);
+                }
+
+                if ($this->shouldStop) {
+                    break;
+                }
+            }
+        } finally {
+            $this->phpSerializer?->rejectPhpIncompleteClass();
         }
     }
 
